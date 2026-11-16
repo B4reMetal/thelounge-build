@@ -1,0 +1,13 @@
+diff --git a/client/js/settings.ts b/client/js/settings.ts
+index 18799ce..4c82a07 100644
+--- a/client/js/settings.ts
++++ b/client/js/settings.ts
+@@ -67,7 +67,7 @@ const defaultConfig = {
+ 		default: true,
+ 	},
+ 	notification: {
+-		default: true,
++		default: false,
+ 		sync: "never",
+ 	},
+ 	notifyAllMessages: {
