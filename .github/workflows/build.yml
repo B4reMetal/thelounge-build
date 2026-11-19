@@ -60,10 +60,12 @@ jobs:
       - name: Apply patches
         if: steps.check.outputs.build == 'true'
         working-directory: src
+        # The patches are nice to have: one that no longer applies is skipped with a warning
+        # and the image is built without it (git apply changes nothing when it fails).
         run: |
           for p in ../patches/*.patch; do
             echo "applying $p"
-            git apply --verbose "$p"
+            git apply --verbose "$p" || echo "::warning::skipped $(basename "$p"): it no longer applies to upstream"
           done
 
       - uses: docker/setup-buildx-action@v3

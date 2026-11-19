@@ -7,7 +7,7 @@ published as `ghcr.io/b4remetal/thelounge`.
 - Also runs every Monday, on every push to `main`, and on demand (Actions → Build → Run workflow).
 - The Monday run builds without cache, so it also picks up base-image security updates.
 - Tags: `latest`, `upstream-<fork commit>`, `<YYYYMMDD>`.
-- A patch that no longer applies fails the build, and `latest` stays on the last good image.
+- A patch that no longer applies is skipped with a warning on the run, and the image is built without it.
 
 ## Patches
 
