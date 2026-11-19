@@ -1,10 +1,12 @@
 name: Build
 
-# Weekly rebuild of fHori/thelounge master with the patches in patches/, so the image
-# picks up upstream fixes and base-image (node bookworm-slim) security updates.
+# Builds fHori/thelounge master with the patches in patches/. A check every 30 minutes builds
+# as soon as upstream has a commit with no image yet; the weekly run rebuilds anyway, without
+# cache, so the image also picks up base-image (node bookworm-slim) security updates.
 on:
   schedule:
-    - cron: "17 9 * * 1" # Mondays 09:17 UTC
+    - cron: "17 9 * * 1" # Mondays 09:17 UTC: full rebuild
+    - cron: "*/30 * * * *" # new upstream commits
   workflow_dispatch:
   push:
     branches: [main]
@@ -16,6 +18,11 @@ permissions:
 env:
   UPSTREAM: fHori/thelounge
   IMAGE: ghcr.io/${{ github.repository_owner }}/thelounge
+  WEEKLY: "17 9 * * 1"
+
+concurrency:
+  group: build
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -29,24 +36,41 @@ jobs:
           ref: master
           path: src
 
-      - name: Apply patches
-        working-directory: src
-        run: |
-          for p in ../patches/*.patch; do
-            echo "applying $p"
-            git apply --verbose "$p"
-          done
-          echo "UPSTREAM_SHA=$(git rev-parse --short HEAD)" >> "$GITHUB_ENV"
-
-      - uses: docker/setup-buildx-action@v3
-
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # The 30-minute check stops here when this upstream commit already has an image.
+      - name: New upstream commit?
+        id: check
+        working-directory: src
+        run: |
+          sha=$(git rev-parse --short HEAD)
+          echo "UPSTREAM_SHA=$sha" >> "$GITHUB_ENV"
+          if [ "${{ github.event_name }}" = schedule ] && [ "${{ github.event.schedule }}" != "$WEEKLY" ] &&
+            docker buildx imagetools inspect "${IMAGE,,}:upstream-$sha" >/dev/null 2>&1; then
+            echo "upstream $sha already built"
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Apply patches
+        if: steps.check.outputs.build == 'true'
+        working-directory: src
+        run: |
+          for p in ../patches/*.patch; do
+            echo "applying $p"
+            git apply --verbose "$p"
+          done
+
+      - uses: docker/setup-buildx-action@v3
+        if: steps.check.outputs.build == 'true'
+
       - name: Image tags
+        if: steps.check.outputs.build == 'true'
         id: tags
         run: |
           {
@@ -58,12 +82,13 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - uses: docker/build-push-action@v6
+        if: steps.check.outputs.build == 'true'
         with:
           context: src
           platforms: linux/amd64
           pull: true
           push: true
-          no-cache: ${{ github.event_name == 'schedule' }}
+          no-cache: ${{ github.event.schedule == env.WEEKLY }}
           tags: ${{ steps.tags.outputs.tags }}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}

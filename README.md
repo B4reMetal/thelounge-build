@@ -1,10 +1,11 @@
 # thelounge-build
 
-Weekly build of [fHori/thelounge](https://github.com/fHori/thelounge) (`master`) with the patches in `patches/`,
+Build of [fHori/thelounge](https://github.com/fHori/thelounge) (`master`) with the patches in `patches/`,
 published as `ghcr.io/b4remetal/thelounge`.
 
-- Runs every Monday, on every push to `main`, and on demand (Actions → Build → Run workflow).
-- Scheduled runs build without cache, so they also pick up base-image security updates.
+- Checks fHori's `master` every 30 minutes and builds when it has a commit with no image yet.
+- Also runs every Monday, on every push to `main`, and on demand (Actions → Build → Run workflow).
+- The Monday run builds without cache, so it also picks up base-image security updates.
 - Tags: `latest`, `upstream-<fork commit>`, `<YYYYMMDD>`.
 - A patch that no longer applies fails the build, and `latest` stays on the last good image.
 
