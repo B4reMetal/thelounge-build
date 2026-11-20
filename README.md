@@ -12,6 +12,7 @@ published as `ghcr.io/b4remetal/thelounge`.
 ## Patches
 
 - `0001-notification-sound-off-by-default.patch`: new logins start with the notification sound off.
+- `0002-link-preview-user-agent-stock-url.patch`: the link preview user agent names thelounge/thelounge again, as stock does.
 
 Add a patch: make the change in a clone of the fork, `git diff > patches/NNNN-name.patch`, commit, push.
 

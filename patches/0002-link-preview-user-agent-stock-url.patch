@@ -1,0 +1,13 @@
+diff --git a/server/plugins/irc-events/link.ts b/server/plugins/irc-events/link.ts
+index 6a1abe4..4199899 100644
+--- a/server/plugins/irc-events/link.ts
++++ b/server/plugins/irc-events/link.ts
+@@ -400,7 +400,7 @@ function getRequestHeaders(headers: Record<string, string>): HeadersInit {
+ 		// Certain websites like Amazon only add <meta> tags to known bots,
+ 		// lets pretend to be them to get the metadata
+ 		"User-Agent":
+-			"Mozilla/5.0 (compatible; The Lounge IRC Client; +https://github.com/fHori/thelounge)" +
++			"Mozilla/5.0 (compatible; The Lounge IRC Client; +https://github.com/thelounge/thelounge)" +
+ 			" facebookexternalhit/1.1 Twitterbot/1.0",
+ 		Accept: headers.accept || "*/*",
+ 		"X-Purpose": "preview",
